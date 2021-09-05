@@ -3,6 +3,7 @@ package com.indialone.codescannerdemo
 import android.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.budiyev.android.codescanner.AutoFocusMode
 import com.budiyev.android.codescanner.CodeScanner
@@ -10,6 +11,9 @@ import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import com.indialone.codescannerdemo.databinding.ActivityMainBinding
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
+import java.io.StringReader
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +36,29 @@ class MainActivity : AppCompatActivity() {
 
         codeScanner.decodeCallback = DecodeCallback {
             runOnUiThread {
+
+                val xmlFactory = XmlPullParserFactory.newInstance()
+                val parser = xmlFactory.newPullParser()
+
+                xmlFactory.isNamespaceAware = true
+
+                parser.setInput(StringReader(it.text))
+                var eventType = parser.eventType
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    if(eventType == XmlPullParser.START_DOCUMENT) {
+                        Log.d("TAG","Start document");
+                    } else if(eventType == XmlPullParser.START_TAG) {
+                        Log.d("TAG","Start tag "+parser.getName());
+                    } else if(eventType == XmlPullParser.END_TAG) {
+                        Log.d("TAG","End tag "+parser.getName());
+                    } else if(eventType == XmlPullParser.TEXT) {
+                        Log.d("TAG","Text "+parser.getText()); // here you get the text from xml
+                    }
+                    eventType = parser.next();
+                }
+                Log.d("TAG","End document");
+
                 val alertDialog = AlertDialog.Builder(this)
                 alertDialog.setTitle("Scan Result")
                 alertDialog.setMessage(it.text)
